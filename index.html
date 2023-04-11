@@ -3,28 +3,27 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui">
-  <title>Chat GPT Simple</title>
+  <title>Tor GPT<title>
   <link rel="stylesheet" href="./main.css">
 </head>
 <div style="display: flex; align-items: center;">
-  <h2 style="display: inline-block;">Chat GPT Simple <span style="font-size: 70%; color: #333">(v0.1.1)</span></h2>
-  <div style="flex: 1;"></div>
+  
+  <!--<div style="flex: 1;"></div>
   <input onclick="reset()" type="submit" title="New (ctrl + i)" value="🥚" />
   <input onclick="showHistory(true)" type="submit" title="History (ctrl + h)" value="🥑" />
   <input onclick="showSettings(true)" type="submit" title="Setting (ctrl + ,)" value="🍪" />
-</div>
+</div>-->
 <div id="box"></div>
 <div id="input">
-  <input onclick="speechToText()" type="submit" title="Speech to text (ctrl + b)" value="🎄" />
   <div id="line" type="text" contenteditable="true"></div>
   <div id="loader" class="loader" hidden></div>
-  <input onclick="onSend()" type="submit" title="按 'ctrl+enter' 或 'alt+enter' 快捷键发送" value="▶" />
+  <input onclick="onSend()" type="submit" title="Send" value="▶" />
 </div>
 <div style="text-align: right; font-size: 90%; margin-bottom: 4px;">
   <a href="#top">TOP</a>
   ctrl(alt)+enter
 </div>
-<div id="settingsModal" class="modal" style="display: none;">
+<!--<div id="settingsModal" class="modal" style="display: none;">
   <div id="settings" class="model-body">
     <div style="display: flex; align-items: center;">
       <h2 style="display: inline-block">Setting</h2>
@@ -80,7 +79,7 @@
       <div style="flex: 1;"></div>
       <button onclick="saveSettings()">Update</button>
       <div style="flex: 1;"></div>
-      <a href="https://github.com/excing/chatgpt" target="_blank" style="padding: 10px 0;"><svg
+      <a href="https://github.com/abdessatar23/chatgpt" target="_blank" style="padding: 10px 0;"><svg
           class="octicon octicon-mark-github v-align-middle" height="32" viewBox="0 0 16 16" version="1.1" width="32"
           aria-hidden="true">
           <path fill-rule="evenodd"
@@ -102,16 +101,7 @@
       value="Delete All" />
     <div id="historyList"></div>
   </div>
-</div>
+</div>-->
 <script src="https://cdn.jsdelivr.net/npm/sse.js@0.6.1/lib/sse.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/uuid@8.3.2/dist/umd/uuidv4.min.js"></script>
 <script src="./app.js"></script>
-<!-- Google tag (gtag.js) -->
-<script async src='https://www.googletagmanager.com/gtag/js?id=G-RBJJWTTD37'></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag() { dataLayer.push(arguments); }
-  gtag('js', new Date());
-
-  gtag('config', 'G-RBJJWTTD37');
-</script>
