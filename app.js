@@ -1,56 +1,4 @@
-window.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") {
-    showSettings(false)
-    showHistory(false)
-  }
-  if ((e.ctrlKey || e.altKey)) {
-    // console.log(e.key);
-    switch (e.key) {
-      case "i":
-        e.preventDefault()
-        reset()
-        break;
-      case ",":
-        e.preventDefault()
-        showSettings(true)
-        break;
-      case "h":
-        e.preventDefault()
-        showHistory(true)
-        break;
-      case ";":
-        e.preventDefault()
-        config.multi = !config.multi
-        addItem("system", "Long conversation checked: " + config.multi)
-        break;
-      case "b":
-        e.preventDefault()
-        speechToText()
-        break;
 
-      default:
-        break;
-    }
-  }
-}, { passive: false })
-
-line.addEventListener("keydown", (e) => {
-  if (e.key == "Enter" && (e.ctrlKey || e.altKey)) {
-    e.preventDefault()
-    onSend()
-  }
-})
-
-line.addEventListener("paste", (e) => {
-  e.preventDefault()
-
-  let clipboardData = (e.clipboardData || window.clipboardData)
-  let paste = clipboardData.getData("text/plain")
-    .toString()
-    .replaceAll("\r\n", "\n")
-  line.focus()
-  document.execCommand("insertText", false, paste)
-}, { passive: false })
 
 function onSend() {
   var value = (line.value || line.innerText).trim()
@@ -102,12 +50,12 @@ function chat(reqMsgs) {
   if (!config.multi) {
     _message = [reqMsgs[0], reqMsgs[reqMsgs.length - 1]]
   }
-  send(`${config.domain}/v1/chat/completions`, {
+  send(`https://api.openai.com/v1/chat/completions`, {
     "model": "gpt-3.5-turbo",
     "messages": _message,
-    "max_tokens": config.maxTokens,
-    "stream": config.stream,
-    "temperature": config.temperature,
+    "max_tokens": 2000,
+    "stream": true
+    "temperature": 0.5,
   }, (data) => {
     let msg = data.choices[0].delta || data.choices[0].message || {}
     assistantElem.className = 'assistant'
@@ -127,26 +75,20 @@ function completions(reqMsgs) {
     _prompt += `${lastMessage.role}: ${lastMessage.content}\n`
   }
   _prompt += "assistant: "
-  send(`${config.domain}/v1/completions`, {
-    "model": config.model,
+  send(`https://api.openai.com/v1/completions`, {
+    "model": 'gpt-3.5-turbo',
     "prompt": _prompt,
-    "max_tokens": config.maxTokens,
+    "max_tokens": 2000,
     "temperature": 0,
     "stop": ["\nuser: ", "\nassistant: "],
-    "stream": config.stream,
-    "temperature": config.temperature,
+    "stream": true,
+    "temperature": 0.5,
   }, (data) => {
     assistantElem.className = 'assistant'
     assistantElem.innerText += data.choices[0].text
   }, () => onSuccessed(assistantElem),)
 }
-function onSuccessed(assistantElem) {
-  let msg = assistantElem.innerText
-  saveConv({ role: "assistant", content: msg })
-  if (config.tts) {
-    textToSpeech(msg)
-  }
-}
+
 function send(reqUrl, body, onMessage, scussionCall) {
   loader.hidden = false
   let onError = (data) => {
@@ -168,7 +110,7 @@ function send(reqUrl, body, onMessage, scussionCall) {
     var source = new SSE(
       reqUrl, {
       headers: {
-        "Authorization": "Bearer " + config.apiKey,
+        "Authorization": "Bearer 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",
         "Content-Type": "application/json",
       },
       method: "POST",
@@ -198,7 +140,7 @@ function send(reqUrl, body, onMessage, scussionCall) {
     fetch(reqUrl, {
       method: "POST",
       headers: {
-        "Authorization": "Bearer " + config.apiKey,
+        "Authorization": "Bearer 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",
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
@@ -215,12 +157,6 @@ function send(reqUrl, body, onMessage, scussionCall) {
   }
 }
 
-function reset() {
-  box.innerHTML = ''
-  convId = uuidv4();
-  messages = [config.firstPrompt]
-  addItem(config.firstPrompt.role, config.firstPrompt.content)
-}
 
 const convKey = "conversations_"
 const convNameKey = "conversationName_"
@@ -331,42 +267,6 @@ function showSettings(ok = true) {
   }
 }
 
-function setSettingInput(config) {
-  domainInput.placeholder = "https://api.openai.com"
-  maxTokensInput.placeholder = config.maxTokens
-  systemPromptInput.placeholder = "You are a helpful assistant."
-  temperatureInput.placeholder = config.temperature
-
-  apiKeyInput.value = config.apiKey
-
-  if (!config.domain) {
-    config.domain = domainInput.placeholder
-  } else {
-    domainInput.value = config.domain
-  }
-  if (!config.maxTokens) {
-    config.maxTokens = parseInt(maxTokensInput.placeholder)
-  } else {
-    maxTokensInput.value = config.maxTokens
-  }
-  if (!config.temperature) {
-    config.temperature = parseInt(temperatureInput.placeholder)
-  } else {
-    temperatureInput.value = config.temperature
-  }
-  if (!config.model) {
-    config.model = "gpt-3.5-turbo"
-  }
-  modelInput.value = config.model
-  if (!config.firstPrompt) {
-    config.firstPrompt = { role: "system", content: systemPromptInput.placeholder }
-  } else {
-    systemPromptInput.value = config.firstPrompt.content
-  }
-  multiConvInput.checked = config.multi
-  ttsInput.checked = config.tts
-  whisperInput.checked = config.onlyWhisper
-}
 
 var config = {
   domain: "",
@@ -381,73 +281,12 @@ var config = {
   tts: false,
   onlyWhisper: false,
 }
-function saveSettings() {
-  if (!apiKeyInput.value) {
-    alert('OpenAI API key can not empty')
-    return
-  }
-  config.domain = domainInput.value || domainInput.placeholder
-  config.apiKey = apiKeyInput.value
-  config.maxTokens = parseInt(maxTokensInput.value || maxTokensInput.placeholder)
-  config.temperature = parseInt(temperatureInput.value || temperatureInput.placeholder)
-  config.model = modelInput.value
-  if (systemPromptInput.value) {
-    config.firstPrompt = {
-      role: "system",
-      content: (systemPromptInput.value || systemPromptInput.placeholder)
-    }
-  }
-  messages[0] = config.firstPrompt
-  config.multi = multiConvInput.checked
-  config.tts = ttsInput.checked
-  config.onlyWhisper = whisperInput.checked
-  box.firstChild.innerHTML = config.firstPrompt.content
-  localStorage.setItem("conversation_config", JSON.stringify(config))
-  showSettings(false)
-  addItem('system', 'Update successed')
-}
 
 function onSelectPrompt(index) {
   let prompt = config.prompts[index]
   systemPromptInput.value = prompt.content
   multiConvInput.checked = prompt.multi
   promptDetails.open = false
-}
-
-function init() {
-  let configJson = localStorage.getItem("conversation_config")
-  let _config = JSON.parse(configJson)
-  if (_config) {
-    let ck = Object.keys(config)
-    ck.forEach(key => {
-      config[key] = _config[key] || config[key]
-    });
-    setSettingInput(config)
-  } else {
-    showSettings(true)
-  }
-  recogLangInput.value = navigator.language
-  if (!('speechSynthesis' in window)) {
-    ttsInput.disabled = false
-    ttsInput.onclick = () => {
-      alert("The current browser does not support text-to-speech");
-    }
-  }
-
-  fetch("./prompts.json").then(resp => {
-    if (!resp.ok) {
-      throw new Error(resp.statusText)
-    }
-    return resp.json()
-  }).then(data => {
-    config.prompts = data
-    for (let index = 0; index < data.length; index++) {
-      const prompt = data[index];
-      promptList.innerHTML += promptDiv(index, prompt)
-    }
-  })
-
-  reset()
 }
 
 window.scrollTo(0, document.body.clientHeight)
